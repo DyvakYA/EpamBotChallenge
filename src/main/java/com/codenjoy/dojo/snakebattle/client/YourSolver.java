@@ -29,13 +29,15 @@ import com.codenjoy.dojo.services.Dice;
 import com.codenjoy.dojo.services.Direction;
 import com.codenjoy.dojo.services.Point;
 import com.codenjoy.dojo.services.RandomDice;
-import com.codenjoy.dojo.snakebattle.model.Elements;
+import com.codenjoy.dojo.snakebattle.direction.SnakeDirection;
+import com.codenjoy.dojo.snakebattle.response.SnakeResponse;
+import com.codenjoy.dojo.snakebattle.snake.Snake;
+import com.codenjoy.dojo.snakebattle.snake.SnakeFactory;
+import com.codenjoy.dojo.snakebattle.strategy.SnakeStrategy;
 import org.apache.log4j.Logger;
 
+import java.net.URI;
 import java.util.List;
-import java.util.Random;
-
-import static com.codenjoy.dojo.services.Direction.*;
 
 /**
  * User: your name
@@ -50,12 +52,6 @@ public class YourSolver implements Solver<Board> {
     private Dice dice;
     private Board board;
 
-    private BlackPoints blackPoints;
-    private Snake snake;
-    private Target target;
-
-    private List<Direction> directions;
-
     YourSolver(Dice dice) {
         this.dice = dice;
     }
@@ -63,48 +59,37 @@ public class YourSolver implements Solver<Board> {
     @Override
     public String get(Board board) {
         this.board = board;
-
-        blackPoints = new BlackPoints();
-        snake = new Snake(board);
-        target = new Target(snake);
-
-        snake.checkSnakeCondition();
-        log.info("Good - " + snake.getGood());
-        log.info("Bad - " + snake.getBad());
-
-        if (snake.getHeadPoint() != null) {
-
-            Direction direction = blackPoints.check(snake.getHeadPoint());
-            if(direction != null){
-                snake.remove(direction);
-            }
-
-            snake.checkBadAround();
-            snake.checkGoodsAround();
-            snake.checkDirection();
-
-            // chose target and move there
-            target.execute();
+        log.info("*************************************");
+        // Snake factory create snake
+        Snake snake = SnakeFactory.createSnake(board);
+        // Get snake strategy
+        SnakeStrategy strategy = snake.getStrategy();
+        Point target = strategy.getTarget();
+        if (target != null) {
+            log.info("TARGET: " + "Type - " + board.getAt(target) + " Point - " + target);
         }
-
-        directions = snake.getDirections();
-
-        log.info("Available directions : " + directions);
-
-        Random rand = new Random();
-        int randomIndex = rand.nextInt(directions.size());
-        Direction randomDirection = directions.get(randomIndex);
-
+        log.info("*************************************");
+        //  Choose directions for snake
+        SnakeDirection snakeDirection = snake.getDirection();
+        List<Direction> directions = snakeDirection.getDirections();
+        log.info("*************************************");
+        // Produce answer for server
+        SnakeResponse response = snake.getSnakeResponse();
+        String answer = response.generate(directions, target);
+        // if game is over
         if (board.isGameOver()) return "";
-
-        return randomDirection.toString();
+        //return random direction from list of available directions
+        return answer;
     }
 
     public static void main(String... args) {
-        WebSocketRunner.runClient(
-                // paste here board page url from browser after registration
-                "https://game2.epam-bot-challenge.com.ua/codenjoy-contest/board/player/dyvakyurii@gmail.com?code=10427676249616874",
-                new YourSolver(new RandomDice()),
-                new Board());
+//        URI uri = URI.create("wss://game3.epam-bot-challenge.com.ua/codenjoy-contest/ws?user=dyvakyurii@gmail.com?code=6938453951410310450");
+//        WebSocketRunner.run(uri, new YourSolver(new RandomDice()), new Board(), 1000);
+
+        WebSocketRunner.runClient("https://game3.epam-bot-challenge.com.ua/codenjoy-contest/board/player/kfeskc9on9uncjs7hbs3?code=6938453951410310450", new YourSolver(new RandomDice()), new Board());
+        //"wss://game2.epam-bot-challenge.com.ua/codenjoy-contest/ws?user=dyvakyurii@gmail.com&code=10427676249616874"
+        // Reset
+        // https://game2.epam-bot-challenge.com.ua/codenjoy-contest/rest/player/dyvakyurii@gmail.com/10427676249616874/reset
+
     }
 }

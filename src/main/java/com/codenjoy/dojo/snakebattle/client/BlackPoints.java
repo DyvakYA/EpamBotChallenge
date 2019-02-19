@@ -1,67 +1,69 @@
 package com.codenjoy.dojo.snakebattle.client;
 
-import com.codenjoy.dojo.services.Direction;
+/*-
+ * #%L
+ * Codenjoy - it's a dojo-like platform from developers to developers.
+ * %%
+ * Copyright (C) 2018 - 2019 Codenjoy
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
 import com.codenjoy.dojo.services.Point;
+import com.codenjoy.dojo.snakebattle.model.Pair;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.codenjoy.dojo.services.Direction.*;
+import static com.codenjoy.dojo.services.Direction.DOWN;
+import static com.codenjoy.dojo.services.Direction.UP;
 
 public class BlackPoints {
+
+    private static final Logger log = Logger.getLogger(BlackPoints.class);
 
     private List<Pair> blackPointsForGoods = new ArrayList<>();
     private List<Pair> blackPointsForSnake = new ArrayList<>();
 
-    public BlackPoints() {
-        blackPointsForGoods.add(new Pair(9, 12));
+    private BlackPoints() {
         blackPointsForGoods.add(new Pair(10, 12));
+        blackPointsForGoods.add(new Pair(11, 12));
+
         blackPointsForGoods.add(new Pair(8, 20));
         blackPointsForGoods.add(new Pair(9, 20));
         blackPointsForGoods.add(new Pair(8, 22));
         blackPointsForGoods.add(new Pair(9, 22));
-        blackPointsForGoods.add(new Pair(19, 20));
-        blackPointsForGoods.add(new Pair(20, 20));
-        blackPointsForGoods.add(new Pair(21, 20));
-        blackPointsForSnake.add(new Pair(8, 20));
-        blackPointsForSnake.add(new Pair(9, 20));
-        blackPointsForSnake.add(new Pair(8, 22));
-        blackPointsForSnake.add(new Pair(9, 22));
+
         blackPointsForGoods.add(new Pair(19, 10));
         blackPointsForGoods.add(new Pair(23, 10));
         blackPointsForGoods.add(new Pair(21, 10));
 
-        blackPointsForSnake.add(new Pair(8, 20));
-        blackPointsForSnake.add(new Pair(9, 20));
-        blackPointsForSnake.add(new Pair(8, 22));
-        blackPointsForSnake.add(new Pair(9, 22));
-        blackPointsForSnake.add(new Pair(19, 10));
-        blackPointsForSnake.add(new Pair(23, 10));
-        blackPointsForSnake.add(new Pair(21, 10));
+        blackPointsForGoods.add(new Pair(19, 20));
+        blackPointsForGoods.add(new Pair(20, 20));
+        blackPointsForGoods.add(new Pair(21, 20));
     }
 
+    private static class Holder {
+        static final BlackPoints INSTANCE = new BlackPoints();
+    }
 
-    private static final Logger log = Logger.getLogger(BlackPoints.class);
-
-    public Direction check(Point headPoint) {
-        log.info("Check black points around me");
-        if (headPoint.getX() == 10 & headPoint.getY() == 20) {
-            return LEFT;
-        }
-        if (headPoint.getX() == 10 & headPoint.getY() == 22) {
-            return LEFT;
-        }
-        if ((headPoint.getX() == 19 & (headPoint.getY() + 1) == 10)) {
-            return UP;
-        }
-        if ((headPoint.getX() == 23 & (headPoint.getY() + 1) == 10)) {
-            return UP;
-        }
-        if ((headPoint.getX() == 21 & (headPoint.getY() - 1) == 10)) {
-            return DOWN;
-        }
-        return null;
+    public static BlackPoints getInstance() {
+        return Holder.INSTANCE;
     }
 
     public List<Point> deleteBlackPoints(List<Point> points) {

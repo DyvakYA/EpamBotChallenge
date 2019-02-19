@@ -24,12 +24,14 @@ package com.codenjoy.dojo.snakebattle.client;
 
 
 import com.codenjoy.dojo.client.AbstractBoard;
+import com.codenjoy.dojo.services.Direction;
 import com.codenjoy.dojo.services.Point;
 import com.codenjoy.dojo.snakebattle.model.Elements;
 import org.apache.log4j.Logger;
 
 import java.util.List;
 
+import static com.codenjoy.dojo.services.Direction.*;
 import static com.codenjoy.dojo.snakebattle.model.Elements.*;
 
 /**
@@ -61,7 +63,7 @@ public class Board extends AbstractBoard<Elements> {
     }
 
     public Point getMe() {
-        return getMyHead().get(0);
+        return !getMyHead().isEmpty() ? getMyHead().get(0) : null;
     }
 
     public boolean isGameOver() {
@@ -70,7 +72,6 @@ public class Board extends AbstractBoard<Elements> {
 
     private List<Point> getMyHead() {
         List<Point> positions = get(HEAD_DOWN, HEAD_LEFT, HEAD_RIGHT, HEAD_UP, HEAD_DEAD, HEAD_SLEEP, HEAD_EVIL, HEAD_FLY);
-        log.info("My position: " + positions);
         return positions;
     }
 
@@ -81,9 +82,166 @@ public class Board extends AbstractBoard<Elements> {
         return snake.size();
     }
 
-    public Elements getSnakeDirection() {
-        List<Point> headPoints = get(HEAD_DOWN, HEAD_LEFT, HEAD_RIGHT, HEAD_UP);
-        return !headPoints.isEmpty() ? getAt(headPoints.get(0)) : null;
+    public boolean isSmallEnemy(Point point) {
+        List<Elements> elements = getNear(point);
+        if (elements.contains(ENEMY_TAIL_END_DOWN) || elements.contains(ENEMY_TAIL_END_LEFT) || elements.contains(ENEMY_TAIL_END_RIGHT) || elements.contains(ENEMY_TAIL_END_UP)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+//        List<Point> snake = get(HEAD_LEFT, HEAD_RIGHT, HEAD_UP, HEAD_DOWN, HEAD_EVIL, HEAD_FLY,
+//                TAIL_END_DOWN, TAIL_END_LEFT, TAIL_END_UP, TAIL_END_RIGHT, TAIL_INACTIVE,
+//                BODY_HORIZONTAL, BODY_VERTICAL, BODY_LEFT_DOWN, BODY_LEFT_UP, BODY_RIGHT_DOWN, BODY_RIGHT_UP);
+//        return snake.size();
+//    }
+
+//    public Elements getSnakeDirection() {
+//        List<Point> headPoints = get(HEAD_DOWN, HEAD_LEFT, HEAD_RIGHT, HEAD_UP);
+//        return !headPoints.isEmpty() ? getAt(headPoints.get(0)) : null;
+//    }
+
+    public Direction getSnakeDirection() {
+        Elements left = getLeftElement(getMe());
+        Elements right = getRightElement(getMe());
+        Elements up = getUpElement(getMe());
+        Elements down = getDownElement(getMe());
+        if (getSnakeSize() == 2) {
+            if (left != null) {
+                if (left.equals(TAIL_END_LEFT)) {
+                    return RIGHT;
+                }
+            }
+            if (right != null) {
+                if (right.equals(TAIL_END_RIGHT)) {
+                    return LEFT;
+                }
+            }
+            if (down != null) {
+                if (down.equals(TAIL_END_DOWN)) {
+                    return UP;
+                }
+            }
+            if (up != null) {
+                if (up.equals(TAIL_END_UP)) {
+                    return DOWN;
+                }
+            }
+        } else {
+            if (left != null) {
+                log.info("Elements around : " + left + " " + right + " " + down + " " + up);
+                if (left.equals(BODY_HORIZONTAL) ||
+                        left.equals(BODY_RIGHT_DOWN) ||
+                        left.equals(BODY_RIGHT_UP)) {
+                    return RIGHT;
+                }
+            }
+            if (right != null) {
+                if (right.equals(BODY_HORIZONTAL) ||
+                        right.equals(BODY_LEFT_DOWN) ||
+                        right.equals(BODY_LEFT_UP)) {
+                    return LEFT;
+                }
+            }
+            if (down != null) {
+                if (down.equals(Elements.BODY_VERTICAL) ||
+                        down.equals(BODY_LEFT_UP) ||
+                        down.equals(BODY_RIGHT_UP)) {
+                    return UP;
+                }
+            }
+            if (up != null) {
+                if (up.equals(Elements.BODY_VERTICAL) ||
+                        up.equals(BODY_LEFT_DOWN) ||
+                        up.equals(BODY_RIGHT_DOWN)) {
+                    return DOWN;
+                }
+            }
+        }
+        return null;
+    }
+
+    public Direction getEnemyDirection(Point point) {
+        log.info("Check enemy direction");
+        Elements left = getLeftElement(point);
+        Elements right = getRightElement(point);
+        Elements up = getUpElement(point);
+        Elements down = getDownElement(point);
+        if (isSmallEnemy(point)) {
+            if (left != null) {
+                if (left.equals(ENEMY_TAIL_END_LEFT)) {
+                    return RIGHT;
+                }
+            }
+            if (right != null) {
+                if (right.equals(ENEMY_TAIL_END_RIGHT)) {
+                    return LEFT;
+                }
+            }
+            if (down != null) {
+                if (down.equals(ENEMY_TAIL_END_DOWN)) {
+                    return UP;
+                }
+            }
+            if (up != null) {
+                if (up.equals(ENEMY_TAIL_END_UP)) {
+                    return DOWN;
+                }
+            }
+        } else {
+            if (left != null) {
+                log.info("Elements around : " + left + " " + right + " " + down + " " + up);
+                if (left.equals(ENEMY_BODY_HORIZONTAL) ||
+                        left.equals(ENEMY_BODY_RIGHT_DOWN) ||
+                        left.equals(ENEMY_BODY_RIGHT_UP)) {
+                    return RIGHT;
+                }
+            }
+            if (right != null) {
+                if (right.equals(ENEMY_BODY_HORIZONTAL) ||
+                        right.equals(ENEMY_BODY_LEFT_DOWN) ||
+                        right.equals(ENEMY_BODY_LEFT_UP)) {
+                    return LEFT;
+                }
+            }
+            if (down != null) {
+                if (down.equals(ENEMY_BODY_VERTICAL) ||
+                        down.equals(ENEMY_BODY_LEFT_UP) ||
+                        down.equals(ENEMY_BODY_RIGHT_UP)) {
+                    return UP;
+                }
+            }
+            if (up != null) {
+                if (up.equals(ENEMY_BODY_VERTICAL) ||
+                        up.equals(ENEMY_BODY_LEFT_DOWN) ||
+                        up.equals(ENEMY_BODY_RIGHT_DOWN)) {
+                    return DOWN;
+                }
+            }
+        }
+        return null;
+    }
+
+    public List<Point> getEnemies() {
+        return get(ENEMY_HEAD_DOWN, ENEMY_HEAD_LEFT, ENEMY_HEAD_RIGHT, ENEMY_HEAD_UP, ENEMY_HEAD_EVIL, ENEMY_HEAD_FLY, ENEMY_HEAD_SLEEP);
+    }
+
+    public Elements getLeftElement(Point point) {
+        return (point.getX() - 1 > 0) ? getAt(point.getX() - 1, point.getY()) : null;
+    }
+
+    public Elements getRightElement(Point point) {
+        return (point.getX() + 1 < 30) ? getAt(point.getX() + 1, point.getY()) : null;
+    }
+
+    public Elements getUpElement(Point point) {
+        return (point.getY() + 1 < 30) ? getAt(point.getX(), point.getY() + 1) : null;
+    }
+
+    public Elements getDownElement(Point point) {
+        return (point.getY() - 1 > 0) ? getAt(point.getX(), point.getY() - 1) : null;
     }
 
     public boolean isHeadEvil() {
@@ -102,4 +260,17 @@ public class Board extends AbstractBoard<Elements> {
         return isAt(x, y, WALL);
     }
 
+
+    public Point getTail() {
+        List<Point> tails = get(TAIL_END_DOWN, TAIL_END_LEFT, TAIL_END_RIGHT, TAIL_END_UP, TAIL_INACTIVE);
+        return !tails.isEmpty() ? tails.get(0) : null;
+    }
+
+    public int getEnemySize() {
+        List<Point> enemyPoints = get(ENEMY_HEAD_DOWN, ENEMY_HEAD_LEFT, ENEMY_HEAD_RIGHT, ENEMY_HEAD_UP, ENEMY_HEAD_FLY, ENEMY_HEAD_EVIL,
+                ENEMY_BODY_RIGHT_DOWN, ENEMY_BODY_LEFT_DOWN, ENEMY_BODY_RIGHT_UP, ENEMY_BODY_RIGHT_UP, ENEMY_BODY_HORIZONTAL, ENEMY_BODY_VERTICAL,
+                ENEMY_TAIL_END_DOWN, ENEMY_TAIL_END_LEFT, ENEMY_TAIL_END_RIGHT, ENEMY_TAIL_END_UP);
+        return enemyPoints.size();
+
+    }
 }
